@@ -28,7 +28,23 @@ export async function GET(req: NextRequest) {
 
   console.log('README Content:', readmeContent);
 
-  const prompt = `Give a short and harsh roasting for the following GitHub profile: ${username}. Be sure to include specific roasts based on their README content: "${readmeContent}". `;
+  // Fetch user's repositories
+  let repoResponse;
+  try {
+    const response = await fetch(`https://api.github.com/users/${username}/repos?sort=updated`, {
+      headers: {
+        'Accept': 'application/vnd.github.v3+json',
+      },
+    });
+    repoResponse = await response.json();
+  } catch (error) {
+    console.error('Error fetching repositories:', error);
+    return NextResponse.json({ error: 'Could not fetch repositories' }, { status: 404 });
+  }
+
+  console.log('Repository Data:', repoResponse);
+
+  const prompt = `Give a short and harsh roasting for the following GitHub profile: ${username}. Be sure to include specific roasts based on their README content: "${readmeContent}" and their repositories: "${JSON.stringify(repoResponse)}".`;
 
   let roast;
   try {
